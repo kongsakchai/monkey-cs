@@ -11,22 +11,10 @@ namespace Monkey.Core
 
     public class Expression : INode
     {
-        public Token Token { get; }
+        private Token Token;
         public string Literal => Token.Literal;
         public virtual string String => Token.Literal;
         public Expression(Token token) => this.Token = token;
-    }
-
-    #endregion
-
-    #region Statement
-
-    public class Statement : INode
-    {
-        public Token Token { get; }
-        public string Literal => Token.Literal;
-        public virtual string String => Token.Literal;
-        public Statement(Token token) => this.Token = token;
     }
 
     public class Identifier : Expression
@@ -73,6 +61,18 @@ namespace Monkey.Core
         public Expression Right { get; }
         public override string String => $"{Operator} {Right.String}";
         public PrefixExpression(Token token, Expression right) : base(token) => this.Right = right;
+    }
+
+    #endregion
+
+    #region Statement
+
+    public class Statement : INode
+    {
+        private Token Token;
+        public string Literal => this.Token.Literal;
+        public virtual string String => this.Token.Literal;
+        public Statement(Token token) => this.Token = token;
     }
 
     #endregion

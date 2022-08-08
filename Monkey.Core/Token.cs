@@ -10,7 +10,7 @@ namespace Monkey.Core
         String, // "Ok"
 
         //Operator
-        Asiign, // =
+        Assign, // =
         MOD, // %
         PLUS, // +
         MINUS, // -
