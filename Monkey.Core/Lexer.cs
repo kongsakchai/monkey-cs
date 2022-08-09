@@ -25,6 +25,7 @@ public class Lexer
         this._source = source;
         this._position = 0;
         this._readPosition = 0;
+        ReadChar();
     }
 
     public Token NextToken()
@@ -35,10 +36,10 @@ public class Lexer
         switch (_ch)
         {
             case '=':
-                tok = new Token(TokenType.Assign, "+");
+                tok = new Token(TokenType.Assign, "=");
                 break;
             case '%':
-                tok = new Token(TokenType.MOD, "+");
+                tok = new Token(TokenType.MOD, "%");
                 break;
             case '+':
                 tok = new Token(TokenType.PLUS, "+");
@@ -47,10 +48,10 @@ public class Lexer
                 tok = new Token(TokenType.MINUS, "-");
                 break;
             case '*':
-                tok = new Token(TokenType.MULTIPLY, "+");
+                tok = new Token(TokenType.MULTIPLY, "*");
                 break;
             case '/':
-                tok = new Token(TokenType.DIVIDE, "-");
+                tok = new Token(TokenType.DIVIDE, "/");
                 break;
             case '"':
                 string _string = ReadString();
@@ -114,16 +115,19 @@ public class Lexer
         while (IsDigital(_ch) || _ch == '.' && IsDigital(peekChar))
             ReadChar();
 
-        return _source.Substring(p, _position - p + 1);
+        return _source.Substring(p, _position - p);
     }
 
     private string ReadIdentifier()
     {
+        // ab=1
+        // 0123
+        // p=a
         int p = _position;
         while (IsLetter(_ch))
             ReadChar();
 
-        return _source.Substring(p, _position - p + 1);
+        return _source.Substring(p, _position - p);
     }
 
     private bool IsDigital(char ch) => ch >= '0' && ch <= '9';
