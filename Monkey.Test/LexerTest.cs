@@ -26,22 +26,22 @@ public class LexerTest
             new Token(TokenType.Ident,"ab"),
             new Token(TokenType.Assign,"="),
             new Token(TokenType.Number,"10"),
-            new Token(TokenType.MULTIPLY,"*"),
+            new Token(TokenType.Multiply,"*"),
             new Token(TokenType.Ident,"b"),
-            new Token(TokenType.PLUS,"+"),
+            new Token(TokenType.Add,"+"),
             new Token(TokenType.Number,"2.5"),
-            new Token(TokenType.PLUS,"+"),
+            new Token(TokenType.Add,"+"),
             new Token(TokenType.Number,"3"),
             ///////////////////////////////
-            new Token(TokenType.PLUS,"+"),
-            new Token(TokenType.MINUS,"-"),
-            new Token(TokenType.MULTIPLY,"*"),
-            new Token(TokenType.DIVIDE,"/"),
-            new Token(TokenType.MOD,"%"),
+            new Token(TokenType.Add,"+"),
+            new Token(TokenType.Sub,"-"),
+            new Token(TokenType.Multiply,"*"),
+            new Token(TokenType.Divide,"/"),
+            new Token(TokenType.Mod,"%"),
             ///////////////////////////////
             new Token(TokenType.String,"Hello"),
             new Token(TokenType.String,"Hi"),
-            new Token(TokenType.PLUS,"+"),
+            new Token(TokenType.Add,"+"),
             new Token(TokenType.String,"Bye"),
             new Token(TokenType.String,"Go"),
             new Token(TokenType.String,"Go"),
@@ -56,7 +56,10 @@ public class LexerTest
         for (int i = 0; i < testCase.Count; i++)
         {
             var token = lexer.NextToken();
-            Assert.AreEqual(testCase[i].ToString(), token.ToString());
+            if (token.Type == TokenType.Eol)
+                i--;
+            else
+                Assert.AreEqual(testCase[i].ToString(), token.ToString());
         }
     }
 }

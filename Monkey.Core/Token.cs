@@ -4,6 +4,7 @@ public enum TokenType
 {
     Illegal, // Unknown token/character
     Eof, //End of files
+    Eol, //End of line
 
     Ident, // ok, a, b, c
     Number, // 123
@@ -11,12 +12,12 @@ public enum TokenType
 
     //Operator
     Assign, // =
-    MOD, // %
-    PLUS, // +
-    MINUS, // -
-    MULTIPLY, // *
-    DIVIDE, // /
-    SIGN,// -n
+    Mod, // %
+    Add, // Addition +
+    Sub, // Subtraction -
+    Multiply, //Multiplicative *
+    Divide, //Division /
+    Sign,// -n
 
     //Keywords
     True,

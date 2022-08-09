@@ -35,23 +35,29 @@ public class Lexer
 
         switch (_ch)
         {
+            case '\0':
+                tok = new Token(TokenType.Eof, "\0");
+                break;
+            case '\n':
+                tok = new Token(TokenType.Eol, "\n");
+                break;
             case '=':
                 tok = new Token(TokenType.Assign, "=");
                 break;
             case '%':
-                tok = new Token(TokenType.MOD, "%");
+                tok = new Token(TokenType.Mod, "%");
                 break;
             case '+':
-                tok = new Token(TokenType.PLUS, "+");
+                tok = new Token(TokenType.Add, "+");
                 break;
             case '-':
-                tok = new Token(TokenType.MINUS, "-");
+                tok = new Token(TokenType.Sub, "-");
                 break;
             case '*':
-                tok = new Token(TokenType.MULTIPLY, "*");
+                tok = new Token(TokenType.Multiply, "*");
                 break;
             case '/':
-                tok = new Token(TokenType.DIVIDE, "/");
+                tok = new Token(TokenType.Divide, "/");
                 break;
             case '"':
                 string _string = ReadString();
@@ -87,7 +93,7 @@ public class Lexer
 
     private void SkipWhiteSpace()
     {
-        while (_ch == ' ' || _ch == '\n' || _ch == '\t' || _ch == '\r')
+        while (_ch == ' ' || _ch == '\t' || _ch == '\r')
             ReadChar();
     }
 
