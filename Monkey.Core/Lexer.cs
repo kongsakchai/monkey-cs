@@ -41,8 +41,59 @@ public class Lexer
             case '\n':
                 tok = new Token(TokenType.Eol, "\n");
                 break;
+            case '!':
+                if (peekChar == '=')
+                {
+                    tok = new Token(TokenType.NotEq, "!=");
+                    ReadChar();
+                }
+                else
+                    tok = new Token(TokenType.Not, "!");
+                break;
             case '=':
-                tok = new Token(TokenType.Assign, "=");
+                if (peekChar == '=')
+                {
+                    tok = new Token(TokenType.Equal, "==");
+                    ReadChar();
+                }
+                else
+                    tok = new Token(TokenType.Assign, "=");
+                break;
+            case '>':
+                if (peekChar == '=')
+                {
+                    tok = new Token(TokenType.GreaterEq, ">=");
+                    ReadChar();
+                }
+                else
+                    tok = new Token(TokenType.Greater, ">");
+                break;
+            case '<':
+                if (peekChar == '=')
+                {
+                    tok = new Token(TokenType.LessEq, "<=");
+                    ReadChar();
+                }
+                else
+                    tok = new Token(TokenType.Less, "<");
+                break;
+            case '&':
+                if (peekChar == '&')
+                {
+                    tok = new Token(TokenType.AND, "&&");
+                    ReadChar();
+                }
+                else
+                    tok = new Token(TokenType.Illegal, $"{_ch}");
+                break;
+            case '|':
+                if (peekChar == '|')
+                {
+                    tok = new Token(TokenType.OR, "||");
+                    ReadChar();
+                }
+                else
+                    tok = new Token(TokenType.Illegal, $"{_ch}");
                 break;
             case '%':
                 tok = new Token(TokenType.Mod, "%");
@@ -138,5 +189,5 @@ public class Lexer
 
     private bool IsDigital(char ch) => ch >= '0' && ch <= '9';
 
-    private bool IsLetter(char ch) => ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch == '_';
+    private bool IsLetter(char ch) => ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z';
 }

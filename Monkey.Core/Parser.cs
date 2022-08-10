@@ -5,14 +5,19 @@ public class Parser
     private enum Precedence
     {
         Lowest,
-        Assignment,
+        Assignment, // =
+        OR, // ||
+        AND, // &&
+        Equality, // == !=
+        Relational, // > < >= <=
         Additive, // + -
-        Multiplicative // * / %
+        Multiplicative, // * / %
+        Prefix, // -x !x
     }
     private Lexer _lexer;
     private Token _curToken;
     private Token _peekToken;
-    private Dictionary<TokenType, Func<Expression, Expression>> _infixFunctions = new Dictionary<TokenType, Func<Expression, Expression>>();
+    private List<TokenType> _infixFunctions = new List<TokenType>();
     private Dictionary<TokenType, Func<Expression>> _prefixFunctions = new Dictionary<TokenType, Func<Expression>>();
     private Dictionary<TokenType, Precedence> _precedences = new Dictionary<TokenType, Precedence>()
     {
@@ -21,11 +26,21 @@ public class Parser
         {TokenType.Mod,Precedence.Multiplicative},
         {TokenType.Add,Precedence.Additive},
         {TokenType.Sub,Precedence.Additive},
-        {TokenType.Assign,Precedence.Assignment}
+        /////////////////////////////////////////
+        {TokenType.Greater,Precedence.Relational},
+        {TokenType.GreaterEq,Precedence.Relational},
+        {TokenType.Less,Precedence.Relational},
+        {TokenType.LessEq,Precedence.Relational},
+        /////////////////////////////////////////
+        {TokenType.AND,Precedence.AND},
+        {TokenType.OR,Precedence.OR},
+        {TokenType.Equal,Precedence.Equality},
+        {TokenType.Not,Precedence.Equality},
+        {TokenType.Assign,Precedence.Assignment},
     };
 
-    private void RegisInfix(TokenType type, Func<Expression, Expression?> func) => _infixFunctions.Add(type, func);
-    private void RegisPrefix(TokenType type, Func<Expression> func) => _prefixFunctions.Add(type, func);
+    private void RegisInfix(TokenType type) => _infixFunctions.Add(type);
+    private void RegisPrefix(TokenType type, Func<Expression?> func) => _prefixFunctions.Add(type, func!);
 
     public Parser(Lexer lexer)
     {
@@ -33,18 +48,28 @@ public class Parser
         _curToken = _lexer.NextToken();
         _peekToken = _lexer.NextToken();
 
-        RegisInfix(TokenType.Add, ParseInfixExpression);
-        RegisInfix(TokenType.Sub, ParseInfixExpression);
-        RegisInfix(TokenType.Multiply, ParseInfixExpression);
-        RegisInfix(TokenType.Divide, ParseInfixExpression);
-        RegisInfix(TokenType.Mod, ParseInfixExpression);
-        RegisInfix(TokenType.Assign, ParseInfixExpression);
+        RegisInfix(TokenType.Add);
+        RegisInfix(TokenType.Sub);
+        RegisInfix(TokenType.Multiply);
+        RegisInfix(TokenType.Divide);
+        RegisInfix(TokenType.Mod);
+        RegisInfix(TokenType.Greater);
+        RegisInfix(TokenType.GreaterEq);
+        RegisInfix(TokenType.Less);
+        RegisInfix(TokenType.LessEq);
+        RegisInfix(TokenType.Equal);
+        RegisInfix(TokenType.NotEq);
+        RegisInfix(TokenType.AND);
+        RegisInfix(TokenType.OR);
+        RegisInfix(TokenType.Assign);
 
         RegisPrefix(TokenType.Ident, ParseIdentifier);
         RegisPrefix(TokenType.Number, ParseNumberLiteral);
         RegisPrefix(TokenType.String, ParseStringLiteral);
         RegisPrefix(TokenType.True, ParseBooleanLiteral);
         RegisPrefix(TokenType.False, ParseBooleanLiteral);
+        RegisPrefix(TokenType.Sub, ParsePrefixExpression);
+        RegisPrefix(TokenType.Not, ParsePrefixExpression);
     }
 
     public Program ParseProgram()
@@ -106,11 +131,11 @@ public class Parser
 
         while (!PeekTokenIs(TokenType.Eol) && p < GetPrecedence(_peekToken.Type))
         {
-            ok = _infixFunctions.TryGetValue(_peekToken.Type, out var infix);
+            ok = _infixFunctions.Contains(_peekToken.Type);
             if (!ok)
                 return expression;
             NextToken();
-            expression = infix!(expression);
+            expression = ParseInfixExpression(expression);
             if (expression == null)
                 return null;
         }
@@ -128,6 +153,17 @@ public class Parser
             return null;
 
         return new InfixExpression(token, left, right);
+    }
+
+    private PrefixExpression? ParsePrefixExpression()
+    {
+        var token = _curToken;
+        NextToken();
+        var right = ParseExpression(Precedence.Prefix);
+        if (right == null)
+            return null;
+
+        return new PrefixExpression(token, right);
     }
 
     private Identifier ParseIdentifier() => new Identifier(_curToken);

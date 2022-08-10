@@ -16,8 +16,18 @@ public enum TokenType
     Add, // Addition +
     Sub, // Subtraction -
     Multiply, //Multiplicative *
-    Divide, //Division /
-    Sign,// -n
+    Divide, //Division
+    Not, // !
+
+    //Logic operator
+    AND, // &&
+    OR, // ||
+    Equal, // ==
+    NotEq, // !=
+    Greater, // >
+    GreaterEq, // >=
+    Less, // <
+    LessEq, // <=
 
     //Keywords
     True,
