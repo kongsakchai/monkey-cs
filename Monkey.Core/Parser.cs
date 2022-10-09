@@ -4,6 +4,7 @@ public class Parser
 {
     private enum Precedence
     {
+        // Sort By Precedence
         Lowest,
         Assignment, // =
         OR, // ||
@@ -12,26 +13,27 @@ public class Parser
         Relational, // > < >= <=
         Additive, // + -
         Multiplicative, // * / %
-        Prefix, // -x !x
+        Prefix, // -x !x +x
     }
     private Lexer _lexer;
     private Token _curToken;
     private Token _peekToken;
-    private List<TokenType> _infixFunctions = new List<TokenType>();
-    private Dictionary<TokenType, Func<Expression>> _prefixFunctions = new Dictionary<TokenType, Func<Expression>>();
-    private Dictionary<TokenType, Precedence> _precedences = new Dictionary<TokenType, Precedence>()
+    private Dictionary<TokenType, Func<Expression, Expression?>> _infixFunctions;
+    private Dictionary<TokenType, Func<Expression?>> _prefixFunctions;
+    private readonly Dictionary<TokenType, Precedence> _precedences = new Dictionary<TokenType, Precedence>()
     {
+        // Precedence for Infix
         {TokenType.Multiply,Precedence.Multiplicative},
         {TokenType.Divide,Precedence.Multiplicative},
         {TokenType.Mod,Precedence.Multiplicative},
         {TokenType.Add,Precedence.Additive},
         {TokenType.Sub,Precedence.Additive},
-        /////////////////////////////////////////
+
         {TokenType.Greater,Precedence.Relational},
         {TokenType.GreaterEq,Precedence.Relational},
         {TokenType.Less,Precedence.Relational},
         {TokenType.LessEq,Precedence.Relational},
-        /////////////////////////////////////////
+
         {TokenType.AND,Precedence.AND},
         {TokenType.OR,Precedence.OR},
         {TokenType.Equal,Precedence.Equality},
@@ -39,8 +41,8 @@ public class Parser
         {TokenType.Assign,Precedence.Assignment},
     };
 
-    private void RegisInfix(TokenType type) => _infixFunctions.Add(type);
-    private void RegisPrefix(TokenType type, Func<Expression?> func) => _prefixFunctions.Add(type, func!);
+    private void RegisInfix(TokenType type, Func<Expression, Expression?> func) => _infixFunctions.Add(type, func);
+    private void RegisPrefix(TokenType type, Func<Expression?> func) => _prefixFunctions.Add(type, func);
 
     public Parser(Lexer lexer)
     {
@@ -48,26 +50,29 @@ public class Parser
         _curToken = _lexer.NextToken();
         _peekToken = _lexer.NextToken();
 
-        RegisInfix(TokenType.Add);
-        RegisInfix(TokenType.Sub);
-        RegisInfix(TokenType.Multiply);
-        RegisInfix(TokenType.Divide);
-        RegisInfix(TokenType.Mod);
-        RegisInfix(TokenType.Greater);
-        RegisInfix(TokenType.GreaterEq);
-        RegisInfix(TokenType.Less);
-        RegisInfix(TokenType.LessEq);
-        RegisInfix(TokenType.Equal);
-        RegisInfix(TokenType.NotEq);
-        RegisInfix(TokenType.AND);
-        RegisInfix(TokenType.OR);
-        RegisInfix(TokenType.Assign);
+        _infixFunctions = new Dictionary<TokenType, Func<Expression, Expression?>>();
+        RegisInfix(TokenType.Add, ParseInfixExpression);
+        RegisInfix(TokenType.Sub, ParseInfixExpression);
+        RegisInfix(TokenType.Multiply, ParseInfixExpression);
+        RegisInfix(TokenType.Divide, ParseInfixExpression);
+        RegisInfix(TokenType.Mod, ParseInfixExpression);
+        RegisInfix(TokenType.Greater, ParseInfixExpression);
+        RegisInfix(TokenType.GreaterEq, ParseInfixExpression);
+        RegisInfix(TokenType.Less, ParseInfixExpression);
+        RegisInfix(TokenType.LessEq, ParseInfixExpression);
+        RegisInfix(TokenType.Equal, ParseInfixExpression);
+        RegisInfix(TokenType.NotEq, ParseInfixExpression);
+        RegisInfix(TokenType.AND, ParseInfixExpression);
+        RegisInfix(TokenType.OR, ParseInfixExpression);
+        RegisInfix(TokenType.Assign, ParseInfixExpression);
 
+        _prefixFunctions = new Dictionary<TokenType, Func<Expression?>>();
         RegisPrefix(TokenType.Ident, ParseIdentifier);
         RegisPrefix(TokenType.Number, ParseNumberLiteral);
         RegisPrefix(TokenType.String, ParseStringLiteral);
         RegisPrefix(TokenType.True, ParseBooleanLiteral);
         RegisPrefix(TokenType.False, ParseBooleanLiteral);
+        RegisPrefix(TokenType.Add, ParsePrefixExpression);
         RegisPrefix(TokenType.Sub, ParsePrefixExpression);
         RegisPrefix(TokenType.Not, ParsePrefixExpression);
     }
@@ -96,8 +101,7 @@ public class Parser
         switch (_curToken.Type)
         {
             case TokenType.Eol:
-                while (CurTokenIs(TokenType.Eol))
-                    NextToken();
+                while (CurTokenIs(TokenType.Eol)) NextToken();
                 return ParseStatement();
             default:
                 return ParseExpressionStatement();
@@ -117,6 +121,7 @@ public class Parser
         return new ExpressionStatement(token, expression);
     }
 
+    // === Expression ===
     #region Expression
 
     private Expression? ParseExpression(Precedence p)
@@ -128,14 +133,16 @@ public class Parser
             return null;
         }
         var expression = prefix!();
+        if (expression == null)
+            return null;
 
         while (!PeekTokenIs(TokenType.Eol) && p < GetPrecedence(_peekToken.Type))
         {
-            ok = _infixFunctions.Contains(_peekToken.Type);
+            ok = _infixFunctions.TryGetValue(_peekToken.Type, out var infix);
             if (!ok)
                 return expression;
             NextToken();
-            expression = ParseInfixExpression(expression);
+            expression = infix!(expression);
             if (expression == null)
                 return null;
         }
@@ -173,6 +180,35 @@ public class Parser
 
     #endregion
 
+    private bool PrefixFunction(TokenType type, out Func<Expression?>? prefix)
+    {
+        prefix = null;
+        switch (type)
+        {
+            case TokenType.Ident:
+                prefix = ParseIdentifier;
+                return true;
+            case TokenType.Number:
+                prefix = ParseNumberLiteral;
+                return true;
+            case TokenType.String:
+                prefix = ParseStringLiteral;
+                return true;
+            case TokenType.True:
+                prefix = ParseBooleanLiteral;
+                return true;
+            case TokenType.False:
+                prefix = ParseBooleanLiteral;
+                return true;
+            case TokenType.Add:
+            case TokenType.Sub:
+            case TokenType.Not:
+                prefix = ParsePrefixExpression;
+                return true;
+            default:
+                return false;
+        }
+    }
     private Precedence GetPrecedence(TokenType t)
     {
         var ok = _precedences.TryGetValue(t, out var p);
