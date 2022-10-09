@@ -1,91 +1,57 @@
 namespace Monkey.Core;
 
-public interface INode
-{
-    public string Literal { get; }
-    public string String { get; }
-}
+public record INode(Token Token);
 
-public class Program : INode
-{
-    public List<Statement> Statements;
-    public string Literal => $"Statements";
-    public string String => string.Join("\n", Statements.Select(s => s.String));
-    public Program(List<Statement> Statements) => this.Statements = Statements;
-}
+public record Program(List<Statement> Statements) : INode(new Token(TokenType.Illegal, ""));
 
 #region Expression
 
-public class Expression : INode
+public record Expression(Token Token) : INode(Token)
 {
-    private Token Token;
     public string Literal => Token.Literal;
     public virtual string String => Token.Literal;
-    public Expression(Token token) => this.Token = token;
 }
 
-public class Identifier : Expression
+public record Identifier(Token Token) : Expression(Token)
 {
     public string Value => Literal;
-    public Identifier(Token token) : base(token) { }
 }
 
-public class NumberLiteral : Expression
-{
-    public float Value { get; }
-    public NumberLiteral(Token token, float value) : base(token) => this.Value = value;
-}
+public record NumberLiteral(Token Token, float Value) : Expression(Token);
 
-public class BooleanLiteral : Expression
-{
-    public bool Value { get; }
-    public BooleanLiteral(Token token, bool value) : base(token) => this.Value = value;
-}
-public class StringLiteral : Expression
+public record BooleanLiteral(Token Token, bool Value) : Expression(Token);
+
+public record StringLiteral(Token Token) : Expression(Token)
 {
     public string Value => Literal;
     public override string String => $"\"{Literal}\"";
-    public StringLiteral(Token token) : base(token) { }
 }
 
-public class InfixExpression : Expression
+public record InfixExpression(Token Token, Expression Left, Expression Right) : Expression(Token)
 {
-    public Expression Left { get; }
     public string Operator => Literal;
-    public Expression Right { get; }
     public override string String => $"{Left.String} {Operator} {Right.String}";
-    public InfixExpression(Token token, Expression left, Expression right) : base(token)
-    {
-        this.Left = left;
-        this.Right = right;
-    }
 }
 
-public class PrefixExpression : Expression
+public record PrefixExpression(Token Token, Expression Right) : Expression(Token)
 {
     public string Operator => Literal;
-    public Expression Right { get; }
     public override string String => $"{Operator} {Right.String}";
-    public PrefixExpression(Token token, Expression right) : base(token) => this.Right = right;
 }
 
 #endregion
 
 #region Statement
 
-public class Statement : INode
+public record Statement(Token Token) : INode(Token)
 {
-    private Token Token;
     public string Literal => this.Token.Literal;
     public virtual string String => this.Token.Literal;
-    public Statement(Token token) => this.Token = token;
 }
 
-public class ExpressionStatement : Statement
+public record ExpressionStatement(Token Token, Expression Expression) : Statement(Token)
 {
-    public Expression Expression { get; }
     public override string String => $"{Expression.String}";
-    public ExpressionStatement(Token token, Expression expression) : base(token) => this.Expression = expression;
 }
 
 #endregion
