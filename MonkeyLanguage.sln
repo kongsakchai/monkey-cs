@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Monkey.Core", "Monkey.Core\Monkey.Core.csproj", "{8D5CBD4A-9ECD-4714-AE0D-F5C1E43CDFF3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonkeyLanguage", "MonkeyLanguage\MonkeyLanguage.csproj", "{7172FF4D-7401-434C-9123-A4C9A76F375F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Monkey.Cli", "MonkeyLanguage\Monkey.Cli.csproj", "{7172FF4D-7401-434C-9123-A4C9A76F375F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Monkey.Test", "Monkey.Test\Monkey.Test.csproj", "{90B653D7-4E67-4A47-9AB4-046B5365F42A}"
 EndProject

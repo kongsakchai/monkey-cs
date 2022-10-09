@@ -34,17 +34,4 @@ public enum TokenType
     False
 }
 
-public class Token
-{
-    public TokenType Type { get; }
-
-    public string Literal { get; }
-
-    public Token(TokenType type, string literal)
-    {
-        Type = type;
-        Literal = literal;
-    }
-
-    public override string ToString() => $"({Type}) {Literal}";
-}
+public record Token(TokenType Type,string Literal);

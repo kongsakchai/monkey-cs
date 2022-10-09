@@ -1,23 +1,26 @@
 namespace Monkey.Core;
 
-public record INode(Token Token);
+public record Node(Token Token)
+{
+    public string Literal => this.Token.Literal;
+    public virtual string String => this.Token.Literal;
+}
 
-public record Program(List<Statement> Statements) : INode(new Token(TokenType.Illegal, ""));
+public record Program(List<Statement> Statements) : Node(new Token(TokenType.Illegal, ""))
+{
+    public override string String => string.Join("\n", Statements.Select(s => s.String));
+}
 
 #region Expression
 
-public record Expression(Token Token) : INode(Token)
-{
-    public string Literal => Token.Literal;
-    public virtual string String => Token.Literal;
-}
+public record Expression(Token Token) : Node(Token);
 
 public record Identifier(Token Token) : Expression(Token)
 {
     public string Value => Literal;
 }
 
-public record NumberLiteral(Token Token, float Value) : Expression(Token);
+public record NumberLiteral(Token Token, double Value) : Expression(Token);
 
 public record BooleanLiteral(Token Token, bool Value) : Expression(Token);
 
@@ -43,11 +46,7 @@ public record PrefixExpression(Token Token, Expression Right) : Expression(Token
 
 #region Statement
 
-public record Statement(Token Token) : INode(Token)
-{
-    public string Literal => this.Token.Literal;
-    public virtual string String => this.Token.Literal;
-}
+public record Statement(Token Token) : Node(Token);
 
 public record ExpressionStatement(Token Token, Expression Expression) : Statement(Token)
 {

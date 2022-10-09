@@ -9,10 +9,10 @@ public class Parser
         Assignment, // =
         OR, // ||
         AND, // &&
-        Equality, // == !=
-        Relational, // > < >= <=
-        Additive, // + -
-        Multiplicative, // * / %
+        Equals, // == !=
+        Relation, // > < >= <=
+        Sum, // + -
+        Product, // * / %
         Prefix, // -x !x +x
     }
     private Lexer _lexer;
@@ -23,21 +23,21 @@ public class Parser
     private readonly Dictionary<TokenType, Precedence> _precedences = new Dictionary<TokenType, Precedence>()
     {
         // Precedence for Infix
-        {TokenType.Multiply,Precedence.Multiplicative},
-        {TokenType.Divide,Precedence.Multiplicative},
-        {TokenType.Mod,Precedence.Multiplicative},
-        {TokenType.Add,Precedence.Additive},
-        {TokenType.Sub,Precedence.Additive},
+        {TokenType.Multiply,Precedence.Product},
+        {TokenType.Divide,Precedence.Product},
+        {TokenType.Mod,Precedence.Product},
+        {TokenType.Add,Precedence.Sum},
+        {TokenType.Sub,Precedence.Sum},
 
-        {TokenType.Greater,Precedence.Relational},
-        {TokenType.GreaterEq,Precedence.Relational},
-        {TokenType.Less,Precedence.Relational},
-        {TokenType.LessEq,Precedence.Relational},
+        {TokenType.Greater,Precedence.Relation},
+        {TokenType.GreaterEq,Precedence.Relation},
+        {TokenType.Less,Precedence.Relation},
+        {TokenType.LessEq,Precedence.Relation},
 
         {TokenType.AND,Precedence.AND},
         {TokenType.OR,Precedence.OR},
-        {TokenType.Equal,Precedence.Equality},
-        {TokenType.Not,Precedence.Equality},
+        {TokenType.Equal,Precedence.Equals},
+        {TokenType.NotEq,Precedence.Equals},
         {TokenType.Assign,Precedence.Assignment},
     };
 
@@ -174,7 +174,7 @@ public class Parser
     }
 
     private Identifier ParseIdentifier() => new Identifier(_curToken);
-    private NumberLiteral ParseNumberLiteral() => new NumberLiteral(_curToken, float.Parse(_curToken.Literal));
+    private NumberLiteral ParseNumberLiteral() => new NumberLiteral(_curToken, double.Parse(_curToken.Literal));
     private BooleanLiteral ParseBooleanLiteral() => new BooleanLiteral(_curToken, CurTokenIs(TokenType.True));
     private StringLiteral ParseStringLiteral() => new StringLiteral(_curToken);
 

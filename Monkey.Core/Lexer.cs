@@ -2,12 +2,12 @@ namespace Monkey.Core;
 
 public class Lexer
 {
-    readonly string _source;
+    private string _source;
     private int _position; // Position in source where last character was read.
     private int _readPosition; // Position in source where next character is read.
     private char _ch;
 
-    TokenType _Keyword(string ident)
+    TokenType _keyword(string ident)
     {
         switch (ident)
         {
@@ -123,7 +123,7 @@ public class Lexer
                 else if (IsLetter(_ch))
                 {
                     string literal = ReadIdentifier();
-                    return new Token(_Keyword(literal), literal);
+                    return new Token(_keyword(literal), literal);
                 }
                 else
                     tok = new Token(TokenType.Illegal, $"{_ch}");
