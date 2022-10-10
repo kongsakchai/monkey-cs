@@ -35,7 +35,8 @@ public enum TokenType
 
     //Keywords
     True,
-    False
+    False,
+    Let
 }
 
 public record Token(TokenType Type,string Literal);

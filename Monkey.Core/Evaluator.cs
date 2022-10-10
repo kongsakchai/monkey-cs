@@ -6,29 +6,35 @@ public static class Evaluator
     static readonly BooleanObject True = new(true);
     static readonly BooleanObject False = new(false);
 
-    public static IObject Eval(Node node)
+    public static IObject Eval(Node node, Environment env)
     {
         switch (node)
         {
             case Program p:
-                return EvalProgram(p.Statements);
+                return EvalProgram(p.Statements, env);
             case ExpressionStatement es:
-                return Eval(es.Expression);
+                return Eval(es.Expression, env);
+            case LetStatement ls:
+                var name = ls.Name.Value;
+                var value = Eval(ls.Expression, env);
+                return IsError(value) ? value : env.Set(name, value);
 
             // === Expression ===
 
             case PrefixExpression pe:
                 {
-                    var right = Eval(pe.Right);
+                    var right = Eval(pe.Right, env);
                     return IsError(right) ? right : EvalPrefixExpression(pe.Operator, right);
                 }
             case InfixExpression ie:
                 {
-                    var left = Eval(ie.Left);
+                    var left = Eval(ie.Left, env);
                     if (IsError(left)) return left;
-                    var right = Eval(ie.Right);
+                    var right = Eval(ie.Right, env);
                     return IsError(right) ? right : EvalInfixExpression(ie.Operator, left, right);
                 }
+            case Identifier _ident:
+                return EvalIdentifier(_ident, env);
             case NumberLiteral _number:
                 return new NumberObject(_number.Value);
             case StringLiteral _string:
@@ -40,17 +46,25 @@ public static class Evaluator
         }
     }
 
-    private static IObject EvalProgram(List<Statement> statements)
+    private static IObject EvalProgram(List<Statement> statements, Environment env)
     {
         IObject result = Null;
         for (int i = 0; i < statements.Count; i++)
         {
-            result = Eval(statements[i]);
+            result = Eval(statements[i], env);
 
             if (result is ErrorObject e)
                 return e;
         }
         return result;
+    }
+
+    private static IObject EvalIdentifier(Identifier ident, Environment env)
+    {
+        var (val, ok) = env.Get(ident.Value);
+        if (ok)
+            return val!;
+        return new ErrorObject($"Identifier not found: {ident.Value}");
     }
 
     private static IObject EvalPrefixExpression(string op, IObject right)

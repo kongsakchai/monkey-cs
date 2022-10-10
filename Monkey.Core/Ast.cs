@@ -2,7 +2,6 @@ namespace Monkey.Core;
 
 public record Node(Token Token)
 {
-    public string Literal => this.Token.Literal;
     public virtual string String => this.Token.Literal;
 }
 
@@ -17,7 +16,7 @@ public record Expression(Token Token) : Node(Token);
 
 public record Identifier(Token Token) : Expression(Token)
 {
-    public string Value => Literal;
+    public string Value => Token.Literal;
 }
 
 public record NumberLiteral(Token Token, double Value) : Expression(Token);
@@ -26,19 +25,19 @@ public record BooleanLiteral(Token Token, bool Value) : Expression(Token);
 
 public record StringLiteral(Token Token) : Expression(Token)
 {
-    public string Value => Literal;
-    public override string String => $"\"{Literal}\"";
+    public string Value => Token.Literal;
+    public override string String => $"\"{Token.Literal}\"";
 }
 
 public record InfixExpression(Token Token, Expression Left, Expression Right) : Expression(Token)
 {
-    public string Operator => Literal;
+    public string Operator => Token.Literal;
     public override string String => $"{Left.String} {Operator} {Right.String}";
 }
 
 public record PrefixExpression(Token Token, Expression Right) : Expression(Token)
 {
-    public string Operator => Literal;
+    public string Operator => Token.Literal;
     public override string String => $"{Operator} {Right.String}";
 }
 
@@ -46,11 +45,16 @@ public record PrefixExpression(Token Token, Expression Right) : Expression(Token
 
 #region Statement
 
-public record Statement(Token Token) : Node(Token);
+public record Statement() : Node(new Token(TokenType.Illegal, ""));
 
-public record ExpressionStatement(Token Token, Expression Expression) : Statement(Token)
+public record ExpressionStatement(Expression Expression) : Statement()
 {
     public override string String => $"{Expression.String}";
+}
+
+public record LetStatement(Identifier Name, Expression Expression) : Statement()
+{
+    public override string String => $"{Name.Value} = {Expression.String}";
 }
 
 #endregion

@@ -15,14 +15,33 @@ public class Lexer
                 return TokenType.True;
             case "false":
                 return TokenType.False;
+            case "let":
+                return TokenType.Let;
             default:
                 return TokenType.Ident;
         }
     }
 
+    public Lexer()
+    {
+        this._source = "";
+    }
+
     public Lexer(string source)
     {
         this._source = source;
+        Reset();
+    }
+
+    public Lexer Set(string source)
+    {
+        this._source = source;
+        Reset();
+        return this;
+    }
+
+    public void Reset()
+    {
         this._position = 0;
         this._readPosition = 0;
         ReadChar();

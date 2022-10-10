@@ -1,19 +1,27 @@
 ﻿using Monkey.Core;
 
-string? line;
-
-do
+public class Program
 {
-    Console.Write("> ");
-    line = Console.ReadLine();
-
-    if (line != null && line != "")
+    public static void Main(string[] arg)
     {
-        var lexer = new Lexer(line);
-        var parser = new Parser(lexer);
+        string? line;
+        var code = new MonkeyCode();
 
-        var result = Evaluator.Eval(parser.ParseProgram());
-        Console.WriteLine(result.String);
+        Console.WriteLine("===========================");
+        Console.WriteLine("      Monkey Language");
+        Console.WriteLine("===========================\n");
+        
+        do
+        {
+            Console.Write("> ");
+            line = Console.ReadLine();
+
+            if (line != null && line != "")
+            {
+                var result = code.Compile(line);
+                Console.WriteLine(result?.String);
+            }
+
+        } while (line != null);
     }
-
-} while (line != null);
+}

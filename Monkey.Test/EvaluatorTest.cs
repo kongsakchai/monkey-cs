@@ -5,27 +5,29 @@ namespace Monkey.Test;
 [TestClass]
 public class EvaluatorTest
 {
+    private MonkeyCode code = new MonkeyCode();
+
     [TestMethod]
-    public void TestBasic()
+    public void TestBasicEval()
     {
         var source = @"""Hello""+1";
-        var lexer = new Lexer(source);
-        var parser = new Parser(lexer);
-        var program = parser.ParseProgram();
-        var result = Evaluator.Eval(program);
-
-        Assert.AreEqual("Hello1", result.String);
+        var result = code.Compile(source);
+        Assert.AreEqual("Hello1", result?.String);
     }
 
     [TestMethod]
     public void TestGroupEval()
     {
         var source = @"(1+2+5)*((10)+5)";
-        var lexer = new Lexer(source);
-        var parser = new Parser(lexer);
-        var program = parser.ParseProgram();
-        var result = Evaluator.Eval(program);
-        
-        Assert.AreEqual("120", result.String);
+        var result = code.Compile(source);
+        Assert.AreEqual("120", result?.String);
+    }
+
+    [TestMethod]
+    public void TestLetEval()
+    {
+        var source = @"let a=(10+5)*10";
+        var result = code.Compile(source);
+        Assert.AreEqual("150", result?.String);
     }
 }

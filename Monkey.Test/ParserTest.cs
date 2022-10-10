@@ -5,13 +5,21 @@ namespace Monkey.Test;
 [TestClass]
 public class ParserTest
 {
+    private Lexer lexer = new Lexer();
+    private Parser? parser;
+
+    [TestInitialize]
+    public void Setup()
+    {
+        parser = new(lexer);
+    }
+
     [TestMethod]
-    public void TestBasic()
+    public void TestBasicParser()
     {
         var source = "1+1+\"Hello\"--A+!true*+false";
-        var lexer = new Lexer(source);
-        var parser = new Parser(lexer);
-        var program = parser.ParseProgram();
+        lexer.Set(source);
+        var program = parser!.ParseProgram();
 
         Assert.AreEqual("1 + 1 + \"Hello\" - - A + ! true * + false", program.String);
     }
@@ -20,10 +28,48 @@ public class ParserTest
     public void TestGroupParser()
     {
         var source = "(1+2+5)*((10)+5)-(((1)))";
-        var lexer = new Lexer(source);
-        var parser = new Parser(lexer);
-        var program = parser.ParseProgram();
+        lexer.Set(source);
+        var program = parser!.ParseProgram();
 
         Assert.AreEqual("1 + 2 + 5 * 10 + 5 - 1", program.String);
+    }
+
+    [TestMethod]
+    public void TestLetParser()
+    {
+        var source = "let a = 10+11+12+13";
+        lexer.Set(source);
+        var program = parser!.ParseProgram();
+
+        Assert.AreEqual("a = 10 + 11 + 12 + 13", program.String);
+    }
+
+    [TestMethod]
+    public void TestErrorParser()
+    {
+        var testCase = new List<String>()
+        {
+            "let a+10+23",
+            "let 10=13",
+            "a++5",
+            "a*+10",
+            "a+*10"
+        };
+
+        var result = new List<String>()
+        {
+            "",
+            "",
+            "a + + 5",
+            "a * + 10",
+            ""
+        };
+
+        for (int i = 0; i < testCase.Count; i++)
+        {
+            lexer.Set(testCase[i]);
+            var program = parser!.ParseProgram();
+            Assert.AreEqual(result[i], program.String);
+        }
     }
 }

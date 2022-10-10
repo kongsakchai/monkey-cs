@@ -17,8 +17,8 @@ public class Parser
         Prefix, // -x !x +x
     }
     private Lexer _lexer;
-    private Token _curToken;
-    private Token _peekToken;
+    private Token _curToken = new Token(TokenType.Illegal, "");
+    private Token _peekToken = new Token(TokenType.Illegal, "");
     private Dictionary<TokenType, Func<Expression, Expression?>> _infixFunctions;
     private Dictionary<TokenType, Func<Expression?>> _prefixFunctions;
     private readonly Dictionary<TokenType, Precedence> _precedences = new Dictionary<TokenType, Precedence>()
@@ -50,9 +50,7 @@ public class Parser
 
     public Parser(Lexer lexer)
     {
-        _lexer = lexer;
-        _curToken = _lexer.NextToken();
-        _peekToken = _lexer.NextToken();
+        this._lexer = lexer;
 
         _infixFunctions = new Dictionary<TokenType, Func<Expression, Expression?>>();
         RegisInfix(TokenType.Add, ParseInfixExpression);
@@ -84,21 +82,32 @@ public class Parser
 
     public Program ParseProgram()
     {
+        _curToken = _lexer.NextToken();
+        _peekToken = _lexer.NextToken();
+
         var statements = new List<Statement>();
         while (!CurTokenIs(TokenType.Eof))
         {
             var s = ParseStatement();
             if (s != null)
                 statements.Add(s);
+            else
+                break;
             NextToken();
         }
         return new Program(statements);
     }
 
+    public Program ParseProgram(Lexer lexer)
+    {
+        this._lexer = lexer;
+        return ParseProgram();
+    }
+
     private void NextToken()
     {
         _curToken = _peekToken;
-        _peekToken = _lexer.NextToken();
+        _peekToken = _lexer!.NextToken();
     }
 
     private Statement? ParseStatement()
@@ -108,14 +117,33 @@ public class Parser
             case TokenType.Eol:
                 while (CurTokenIs(TokenType.Eol)) NextToken();
                 return ParseStatement();
+            case TokenType.Let:
+                return ParseLetStatement();
             default:
                 return ParseExpressionStatement();
         }
     }
 
+    private LetStatement? ParseLetStatement()
+    {
+        if (!ExpectPeek(TokenType.Ident))
+            return null;
+
+        var ident = ParseIdentifier();
+
+        if (!ExpectPeek(TokenType.Assign))
+            return null;
+
+        NextToken();
+        var expression = ParseExpression(Precedence.Lowest);
+        if (expression == null)
+            return null;
+
+        return new LetStatement(ident, expression);
+    }
+
     private ExpressionStatement? ParseExpressionStatement()
     {
-        var token = _curToken;
         var expression = ParseExpression(Precedence.Lowest);
         if (expression == null)
             return null;
@@ -123,7 +151,7 @@ public class Parser
         if (PeekTokenIs(TokenType.Eol))
             NextToken();
 
-        return new ExpressionStatement(token, expression);
+        return new ExpressionStatement(expression);
     }
 
     // === Expression ===
