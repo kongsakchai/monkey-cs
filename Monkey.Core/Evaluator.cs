@@ -86,7 +86,7 @@ public static class Evaluator
         if (ReferenceEquals(right, False))
             return True;
         if (ReferenceEquals(right, Null))
-            return Null;
+            return True;
 
         return new ErrorObject($"Unknown operator: ! {right.Type}");
     }
@@ -117,10 +117,10 @@ public static class Evaluator
         return op switch
         {
             "+" => new NumberObject(_left + _right),
-            "-" => new NumberObject(_left + _right),
-            "*" => new NumberObject(_left + _right),
-            "/" => new NumberObject(_left + _right),
-            "%" => new NumberObject(_left + _right),
+            "-" => new NumberObject(_left - _right),
+            "*" => new NumberObject(_left * _right),
+            "/" => new NumberObject(_left / _right),
+            "%" => new NumberObject(_left % _right),
             "==" => (_left == _right) ? True : False,
             "!=" => (_left != _right) ? True : False,
             ">" => (_left > _right) ? True : False,

@@ -119,4 +119,47 @@ public class LexerTest
                 Assert.AreEqual(testCase[i].ToString(), token.ToString());
         }
     }
+
+    [TestMethod]
+    public void TestDelimitersLexer()
+    {
+        var source = @"(1+2+5)+((10)+5)-(((1)))";
+        var lexer = new Lexer(source);
+
+        var testCase = new List<Token>()
+        {
+            new Token(TokenType.LParen,"("),
+            new Token(TokenType.Number,"1"),
+            new Token(TokenType.Add,"+"),
+            new Token(TokenType.Number,"2"),
+            new Token(TokenType.Add,"+"),
+            new Token(TokenType.Number,"5"),
+            new Token(TokenType.RParen,")"),
+            new Token(TokenType.Add,"+"),
+            new Token(TokenType.LParen,"("),
+            new Token(TokenType.LParen,"("),
+            new Token(TokenType.Number,"10"),
+            new Token(TokenType.RParen,")"),
+            new Token(TokenType.Add,"+"),
+            new Token(TokenType.Number,"5"),
+            new Token(TokenType.RParen,")"),
+            new Token(TokenType.Sub,"-"),
+            new Token(TokenType.LParen,"("),
+            new Token(TokenType.LParen,"("),
+            new Token(TokenType.LParen,"("),
+            new Token(TokenType.Number,"1"),
+            new Token(TokenType.RParen,")"),
+            new Token(TokenType.RParen,")"),
+            new Token(TokenType.RParen,")"),
+        };
+
+        for (int i = 0; i < testCase.Count; i++)
+        {
+            var token = lexer.NextToken();
+            if (token.Type == TokenType.Eol)
+                i--;
+            else
+                Assert.AreEqual(testCase[i].ToString(), token.ToString());
+        }
+    }
 }

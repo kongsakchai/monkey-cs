@@ -29,6 +29,10 @@ public enum TokenType
     Less, // <
     LessEq, // <=
 
+    // Delimiters
+    LParen, // (
+    RParen, // )
+
     //Keywords
     True,
     False

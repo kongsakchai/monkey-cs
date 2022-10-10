@@ -13,6 +13,7 @@ public class Parser
         Relation, // > < >= <=
         Sum, // + -
         Product, // * / %
+        Call, // (
         Prefix, // -x !x +x
     }
     private Lexer _lexer;
@@ -36,9 +37,12 @@ public class Parser
 
         {TokenType.AND,Precedence.AND},
         {TokenType.OR,Precedence.OR},
+
         {TokenType.Equal,Precedence.Equals},
         {TokenType.NotEq,Precedence.Equals},
         {TokenType.Assign,Precedence.Assignment},
+
+        { TokenType.LParen, Precedence.Call }
     };
 
     private void RegisInfix(TokenType type, Func<Expression, Expression?> func) => _infixFunctions.Add(type, func);
@@ -75,6 +79,7 @@ public class Parser
         RegisPrefix(TokenType.Add, ParsePrefixExpression);
         RegisPrefix(TokenType.Sub, ParsePrefixExpression);
         RegisPrefix(TokenType.Not, ParsePrefixExpression);
+        RegisPrefix(TokenType.LParen, ParseGroupExpression);
     }
 
     public Program ParseProgram()
@@ -136,6 +141,7 @@ public class Parser
         if (expression == null)
             return null;
 
+
         while (!PeekTokenIs(TokenType.Eol) && p < GetPrecedence(_peekToken.Type))
         {
             ok = _infixFunctions.TryGetValue(_peekToken.Type, out var infix);
@@ -171,6 +177,13 @@ public class Parser
             return null;
 
         return new PrefixExpression(token, right);
+    }
+
+    private Expression? ParseGroupExpression()
+    {
+        NextToken();
+        var expression = ParseExpression(Precedence.Lowest);
+        return !ExpectPeek(TokenType.RParen) ? null : expression;
     }
 
     private Identifier ParseIdentifier() => new Identifier(_curToken);
@@ -216,4 +229,13 @@ public class Parser
     }
     private bool CurTokenIs(TokenType t) => _curToken.Type == t;
     private bool PeekTokenIs(TokenType t) => _peekToken.Type == t;
+    private bool ExpectPeek(TokenType t)
+    {
+        if (PeekTokenIs(t))
+        {
+            NextToken();
+            return true;
+        }
+        return false;
+    }
 }

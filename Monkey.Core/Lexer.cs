@@ -41,6 +41,12 @@ public class Lexer
             case '\n':
                 tok = new Token(TokenType.Eol, "\n");
                 break;
+            case '(':
+                tok = new Token(TokenType.LParen, "(");
+                break;
+            case ')':
+                tok = new Token(TokenType.RParen, ")");
+                break;
             case '!':
                 if (peekChar == '=')
                 {

@@ -1,0 +1,20 @@
+{
+  "name": "monkeylanguage",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "dotnet test Monkey.Test",
+    "dev":"dotnet run --project Monkey.Cli"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kongsakchai/monkey-cs.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kongsakchai/monkey-cs/issues"
+  },
+  "homepage": "https://github.com/kongsakchai/monkey-cs#readme"
+}
