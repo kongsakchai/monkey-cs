@@ -28,4 +28,6 @@ public class Environment
         return value;
     }
 
+    public void Reset() => Store.Clear();
+
 }

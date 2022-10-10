@@ -15,9 +15,11 @@ public static class Evaluator
             case ExpressionStatement es:
                 return Eval(es.Expression, env);
             case LetStatement ls:
-                var name = ls.Name.Value;
-                var value = Eval(ls.Expression, env);
-                return IsError(value) ? value : env.Set(name, value);
+                {
+                    var name = ls.Name.Value;
+                    var value = Eval(ls.Value, env);
+                    return IsError(value) ? value : env.Set(name, value);
+                }
 
             // === Expression ===
 
@@ -32,6 +34,12 @@ public static class Evaluator
                     if (IsError(left)) return left;
                     var right = Eval(ie.Right, env);
                     return IsError(right) ? right : EvalInfixExpression(ie.Operator, left, right);
+                }
+            case AssignExpression ae:
+                {
+                    var name = ae.Name.Value;
+                    var value = Eval(ae.Value, env);
+                    return IsError(value) ? value : env.Set(name, value);
                 }
             case Identifier _ident:
                 return EvalIdentifier(_ident, env);

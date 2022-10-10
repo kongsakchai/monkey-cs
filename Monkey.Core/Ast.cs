@@ -41,6 +41,11 @@ public record PrefixExpression(Token Token, Expression Right) : Expression(Token
     public override string String => $"{Operator} {Right.String}";
 }
 
+public record AssignExpression(Identifier Name, Expression Value) : Expression(new Token(TokenType.Illegal, ""))
+{
+    public override string String => $"{Name.Value} = {Value.String}";
+}
+
 #endregion
 
 #region Statement
@@ -52,9 +57,9 @@ public record ExpressionStatement(Expression Expression) : Statement()
     public override string String => $"{Expression.String}";
 }
 
-public record LetStatement(Identifier Name, Expression Expression) : Statement()
+public record LetStatement(Identifier Name, Expression Value) : Statement()
 {
-    public override string String => $"{Name.Value} = {Expression.String}";
+    public override string String => $"{Name.Value} = {Value.String}";
 }
 
 #endregion

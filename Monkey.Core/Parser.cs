@@ -4,7 +4,7 @@ public class Parser
 {
     private enum Precedence
     {
-        // Sort By Precedence
+        // Sort By Precedence (Infix)
         Lowest,
         Assignment, // =
         OR, // ||
@@ -66,14 +66,14 @@ public class Parser
         RegisInfix(TokenType.NotEq, ParseInfixExpression);
         RegisInfix(TokenType.AND, ParseInfixExpression);
         RegisInfix(TokenType.OR, ParseInfixExpression);
-        RegisInfix(TokenType.Assign, ParseInfixExpression);
+        RegisInfix(TokenType.Assign, ParseAssignExpression);
 
         _prefixFunctions = new Dictionary<TokenType, Func<Expression?>>();
         RegisPrefix(TokenType.Ident, ParseIdentifier);
-        RegisPrefix(TokenType.Number, ParseNumberLiteral);
-        RegisPrefix(TokenType.String, ParseStringLiteral);
-        RegisPrefix(TokenType.True, ParseBooleanLiteral);
-        RegisPrefix(TokenType.False, ParseBooleanLiteral);
+        RegisPrefix(TokenType.Number, ParseNumber);
+        RegisPrefix(TokenType.String, ParseString);
+        RegisPrefix(TokenType.True, ParseBoolean);
+        RegisPrefix(TokenType.False, ParseBoolean);
         RegisPrefix(TokenType.Add, ParsePrefixExpression);
         RegisPrefix(TokenType.Sub, ParsePrefixExpression);
         RegisPrefix(TokenType.Not, ParsePrefixExpression);
@@ -119,17 +119,18 @@ public class Parser
                 return ParseStatement();
             case TokenType.Let:
                 return ParseLetStatement();
+            case TokenType.Ident:
+                return ParseIdentifierStatement();
             default:
                 return ParseExpressionStatement();
         }
     }
-
     private LetStatement? ParseLetStatement()
     {
         if (!ExpectPeek(TokenType.Ident))
             return null;
 
-        var ident = ParseIdentifier();
+        var name = ParseIdentifier();
 
         if (!ExpectPeek(TokenType.Assign))
             return null;
@@ -139,7 +140,22 @@ public class Parser
         if (expression == null)
             return null;
 
-        return new LetStatement(ident, expression);
+        return new LetStatement(name, expression);
+    }
+
+    private Statement? ParseIdentifierStatement()
+    {
+        var name = ParseIdentifier();
+        if (!ExpectPeek(TokenType.Assign))
+        {
+            return ParseExpressionStatement();
+        }
+        NextToken();
+        var expression = ParseExpression(Precedence.Lowest);
+        if (expression == null)
+            return null;
+
+        return new LetStatement(name, expression);
     }
 
     private ExpressionStatement? ParseExpressionStatement()
@@ -196,6 +212,20 @@ public class Parser
         return new InfixExpression(token, left, right);
     }
 
+    private AssignExpression? ParseAssignExpression(Expression ident)
+    {
+        if (ident is Identifier name)
+        {
+            NextToken();
+            var expression = ParseExpression(Precedence.Lowest);
+            if (expression == null)
+                return null;
+
+            return new AssignExpression(name, expression);
+        }
+        return null;
+    }
+
     private PrefixExpression? ParsePrefixExpression()
     {
         var token = _curToken;
@@ -215,9 +245,9 @@ public class Parser
     }
 
     private Identifier ParseIdentifier() => new Identifier(_curToken);
-    private NumberLiteral ParseNumberLiteral() => new NumberLiteral(_curToken, double.Parse(_curToken.Literal));
-    private BooleanLiteral ParseBooleanLiteral() => new BooleanLiteral(_curToken, CurTokenIs(TokenType.True));
-    private StringLiteral ParseStringLiteral() => new StringLiteral(_curToken);
+    private NumberLiteral ParseNumber() => new NumberLiteral(_curToken, double.Parse(_curToken.Literal));
+    private BooleanLiteral ParseBoolean() => new BooleanLiteral(_curToken, CurTokenIs(TokenType.True));
+    private StringLiteral ParseString() => new StringLiteral(_curToken);
 
     #endregion
 
@@ -230,16 +260,16 @@ public class Parser
                 prefix = ParseIdentifier;
                 return true;
             case TokenType.Number:
-                prefix = ParseNumberLiteral;
+                prefix = ParseNumber;
                 return true;
             case TokenType.String:
-                prefix = ParseStringLiteral;
+                prefix = ParseString;
                 return true;
             case TokenType.True:
-                prefix = ParseBooleanLiteral;
+                prefix = ParseBoolean;
                 return true;
             case TokenType.False:
-                prefix = ParseBooleanLiteral;
+                prefix = ParseBoolean;
                 return true;
             case TokenType.Add:
             case TokenType.Sub:
