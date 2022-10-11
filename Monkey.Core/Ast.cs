@@ -7,7 +7,7 @@ public record Node(Token Token)
 
 public record Program(List<Statement> Statements) : Node(new Token(TokenType.Illegal, ""))
 {
-    public override string String => string.Join("\n", Statements.Select(s => s.String));
+    public override string String => string.Join(" ", Statements.Select(s => s.String));
 }
 
 #region Expression
@@ -50,16 +50,26 @@ public record AssignExpression(Identifier Name, Expression Value) : Expression(n
 
 #region Statement
 
-public record Statement() : Node(new Token(TokenType.Illegal, ""));
+public record Statement(Token Token) : Node(Token);
 
-public record ExpressionStatement(Expression Expression) : Statement()
+public record ExpressionStatement(Expression Expression) : Statement(new Token(TokenType.Null, "Statement"))
 {
     public override string String => $"{Expression.String}";
 }
 
-public record LetStatement(Identifier Name, Expression Value) : Statement()
+public record LetStatement(Identifier Name, Expression Value) : Statement(new Token(TokenType.Let, "let"))
 {
     public override string String => $"{Name.Value} = {Value.String}";
+}
+
+public record BlockStatement(List<Statement> Statements) : Statement(new Token(TokenType.LBrace, "{"))
+{
+    public override string String => string.Join(" ", Statements.Select(s => s.String));
+}
+
+public record IfStatement(Expression Condition, Statement Consequence, Statement? Alternative) : Statement(new Token(TokenType.If, "If"))
+{
+    public override string String => $"if {Condition.String} {{ {Consequence.String} }} else {{ {Alternative?.String} }}";
 }
 
 #endregion

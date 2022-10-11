@@ -6,6 +6,7 @@ public enum ObjectType
     String,
     Boolean,
     Null,
+    Return,
     Error
 }
 
@@ -23,6 +24,12 @@ public record StringObject(string Value) : IObject
 {
     public ObjectType Type => ObjectType.String;
     public string String => Value;
+}
+
+public record ReturnObject(IObject Value):IObject
+{
+    public ObjectType Type => ObjectType.Return;
+    public string String => Value.String;
 }
 
 public record BooleanObject(bool Value) : IObject

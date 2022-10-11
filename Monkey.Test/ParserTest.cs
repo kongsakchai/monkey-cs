@@ -72,4 +72,59 @@ public class ParserTest
             Assert.AreEqual(result[i], program.String);
         }
     }
+
+    [TestMethod]
+    public void TestIfParser()
+    {
+        var testCase = new List<String>()
+        {
+            @"a=1
+            if(a==1)
+                a=a+1
+            ",
+            @"a=1
+            if(a==1){
+                a=a+1
+            }
+            "
+            ,
+            @"a=1
+            if(a>5)
+                a=a+1
+            else
+                a=a+10
+            ",
+            @"a=1
+            if(a>5){
+                a=a+1
+            }else{
+                a=a+5
+            }
+            "
+            ,
+            @"a=1
+            if(a>5)
+                a=a+1
+            else if(a==5)
+                a=a+5
+            else
+                a=0
+            "
+        };
+
+        var result = new List<String>()
+        {
+            "a = 1 if a == 1 { a = a + 1 } else {  }",
+            "a = 1 if a == 1 { a = a + 1 } else {  }",
+            "a = 1 if a > 5 { a = a + 1 } else { a = a + 10 }",
+            "a = 1 if a > 5 { a = a + 1 } else { a = a + 5 }",
+            "a = 1 if a > 5 { a = a + 1 } else { if a == 5 { a = a + 5 } else { a = 0 } }"
+        };
+        for (int i = 0; i < testCase.Count; i++)
+        {
+            lexer.Set(testCase[i]);
+            var program = parser!.ParseProgram();
+            Assert.AreEqual(result[i], program.String);
+        }
+    }
 }

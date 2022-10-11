@@ -12,14 +12,18 @@ public static class Evaluator
         {
             case Program p:
                 return EvalProgram(p.Statements, env);
+            case BlockStatement bs:
+                return EvalProgram(bs.Statements, env);
             case ExpressionStatement es:
                 return Eval(es.Expression, env);
             case LetStatement ls:
                 {
-                    var name = ls.Name.Value;
                     var value = Eval(ls.Value, env);
-                    return IsError(value) ? value : env.Set(name, value);
+                    return IsError(value) ? value : env.Set(ls.Name.Value, value);
                 }
+            case IfStatement ifs:
+                return EvalIfStatement(ifs, env);
+
 
             // === Expression ===
 
@@ -37,9 +41,8 @@ public static class Evaluator
                 }
             case AssignExpression ae:
                 {
-                    var name = ae.Name.Value;
                     var value = Eval(ae.Value, env);
-                    return IsError(value) ? value : env.Set(name, value);
+                    return IsError(value) ? value : env.Set(ae.Name.Value, value);
                 }
             case Identifier _ident:
                 return EvalIdentifier(_ident, env);
@@ -61,10 +64,26 @@ public static class Evaluator
         {
             result = Eval(statements[i], env);
 
+            if (result is ReturnObject r)
+                return r.Value;
             if (result is ErrorObject e)
                 return e;
         }
         return result;
+    }
+
+    private static IObject EvalIfStatement(IfStatement ifStatement, Environment env)
+    {
+        var condition = Eval(ifStatement.Condition, env);
+        if (IsError(condition))
+            return condition;
+
+        if (IsTruthy(condition))
+            return Eval(ifStatement.Consequence, env);
+        else if (ifStatement.Alternative != null)
+            return Eval(ifStatement.Alternative, env);
+            
+        return Null;
     }
 
     private static IObject EvalIdentifier(Identifier ident, Environment env)
@@ -184,4 +203,16 @@ public static class Evaluator
     }
 
     private static bool IsError(IObject obj) => obj.Type == ObjectType.Error;
+
+    private static bool IsTruthy(IObject obj)
+    {
+        if (ReferenceEquals(obj, Null))
+            return false;
+        if (ReferenceEquals(obj, True))
+            return true;
+        if (ReferenceEquals(obj, False))
+            return false;
+        return true;
+    }
+
 }

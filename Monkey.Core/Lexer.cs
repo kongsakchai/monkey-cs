@@ -17,6 +17,10 @@ public class Lexer
                 return TokenType.False;
             case "let":
                 return TokenType.Let;
+            case "if":
+                return TokenType.If;
+            case "else":
+                return TokenType.Else;
             default:
                 return TokenType.Ident;
         }
@@ -65,6 +69,12 @@ public class Lexer
                 break;
             case ')':
                 tok = new Token(TokenType.RParen, ")");
+                break;
+            case '{':
+                tok = new Token(TokenType.LBrace, "{");
+                break;
+            case '}':
+                tok = new Token(TokenType.RBrace, "}");
                 break;
             case '!':
                 if (peekChar == '=')
@@ -169,7 +179,7 @@ public class Lexer
 
     private void SkipWhiteSpace()
     {
-        while (_ch == ' ' || _ch == '\t' || _ch == '\r')
+        while (_ch == ' ' || _ch == '\r' || _ch == '\t')
             ReadChar();
     }
 

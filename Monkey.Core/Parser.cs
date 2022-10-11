@@ -17,6 +17,7 @@ public class Parser
         Prefix, // -x !x +x
     }
     private Lexer _lexer;
+    private int _blockCount = 0;
     private Token _curToken = new Token(TokenType.Illegal, "");
     private Token _peekToken = new Token(TokenType.Illegal, "");
     private Dictionary<TokenType, Func<Expression, Expression?>> _infixFunctions;
@@ -88,6 +89,7 @@ public class Parser
         var statements = new List<Statement>();
         while (!CurTokenIs(TokenType.Eof))
         {
+
             var s = ParseStatement();
             if (s != null)
                 statements.Add(s);
@@ -121,26 +123,13 @@ public class Parser
                 return ParseLetStatement();
             case TokenType.Ident:
                 return ParseIdentifierStatement();
+            case TokenType.If:
+                return ParseIfStatement();
+            case TokenType.LBrace:
+                return ParseBlockStatement();
             default:
                 return ParseExpressionStatement();
         }
-    }
-    private LetStatement? ParseLetStatement()
-    {
-        if (!ExpectPeek(TokenType.Ident))
-            return null;
-
-        var name = ParseIdentifier();
-
-        if (!ExpectPeek(TokenType.Assign))
-            return null;
-
-        NextToken();
-        var expression = ParseExpression(Precedence.Lowest);
-        if (expression == null)
-            return null;
-
-        return new LetStatement(name, expression);
     }
 
     private Statement? ParseIdentifierStatement()
@@ -168,6 +157,69 @@ public class Parser
             NextToken();
 
         return new ExpressionStatement(expression);
+    }
+
+    private BlockStatement? ParseBlockStatement()
+    {
+        NextToken();
+        var statements = new List<Statement>();
+        while (!CurTokenIs(TokenType.RBrace) && !CurTokenIs(TokenType.Eof))
+        {
+            var s = ParseStatement();
+            if (s != null)
+                statements.Add(s);
+            else
+                break;
+            NextToken();
+        }
+        if (!CurTokenIs(TokenType.RBrace))
+            return null;
+        return new BlockStatement(statements);
+    }
+
+    private LetStatement? ParseLetStatement()
+    {
+        if (!ExpectPeek(TokenType.Ident))
+            return null;
+
+        var name = ParseIdentifier();
+
+        if (!ExpectPeek(TokenType.Assign))
+            return null;
+
+        NextToken();
+        var expression = ParseExpression(Precedence.Lowest);
+        if (expression == null)
+            return null;
+
+        return new LetStatement(name, expression);
+    }
+
+    private IfStatement? ParseIfStatement()
+    {
+        NextToken();
+        var condition = ParseExpression(Precedence.Lowest);
+
+        if (condition == null)
+            return null;
+
+        NextToken();
+        var consequence = ParseStatement();
+        if (consequence == null)
+            return null;
+
+        
+        while (PeekTokenIs(TokenType.Eol)) NextToken();
+
+        Statement? alternative = null;
+        if (ExpectPeek(TokenType.Else))
+        {
+            NextToken();
+            alternative = ParseStatement();
+            if (alternative == null)
+                return null;
+        }
+        return new IfStatement(condition, consequence, alternative);
     }
 
     // === Expression ===

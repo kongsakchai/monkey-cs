@@ -30,4 +30,58 @@ public class EvaluatorTest
         var result = code.Compile(source);
         Assert.AreEqual("150", result?.String);
     }
+
+    [TestMethod]
+    public void TestIfEval()
+    {
+        var testCase = new List<String>()
+        {
+            @"a=1
+            if(a==1)
+                a=a+1
+            ",
+            @"a=1
+            if(a==1){
+                a=a+1
+            }
+            "
+            ,
+            @"a=1
+            if(a>5)
+                a=a+1
+            else
+                a=a+10
+            ",
+            @"a=1
+            if(a>5){
+                a=a+1
+            }else{
+                a=a+5
+            }
+            "
+            ,
+            @"a=1
+            if(a>5)
+                a=a+1
+            else if(a==5)
+                a=a+5
+            else
+                a=0
+            "
+        };
+
+        var result = new List<String>()
+        {
+            "2",
+            "2",
+            "11",
+            "6",
+            "0"
+        };
+        for (int i = 0; i < testCase.Count; i++)
+        {
+            var _result = code.Compile(testCase[i]);
+            Assert.AreEqual(result[i], _result?.String);
+        }
+    }
 }

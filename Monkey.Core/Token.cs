@@ -32,11 +32,16 @@ public enum TokenType
     // Delimiters
     LParen, // (
     RParen, // )
+    LBrace, // {
+    RBrace, // }
 
     //Keywords
     True,
     False,
-    Let
+    Let,
+    Null,
+    If,
+    Else
 }
 
 public record Token(TokenType Type,string Literal);

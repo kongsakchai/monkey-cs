@@ -17,8 +17,9 @@ public class MonkeyCode
     {
         lexer.Set(source);
         var program = parser.ParseProgram();
-        if (program == null) return null;
-        return Evaluator.Eval(program,env);
+        if (program == null)
+            return new ErrorObject("Not found program");
+        return Evaluator.Eval(program, env);
     }
 
 }
